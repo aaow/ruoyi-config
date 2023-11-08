@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ruoyi-ui
+  labels:
+    app: ruoyi-ui
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ruoyi-ui
+  template:
+    metadata:
+      labels:
+        app: ruoyi-ui
+    spec:
+      initContainers:
+        - name: wait-for-ruoyi-admin
+          image: nginx:1.22
+          command:
+            - sh
+            - -c
+            - |
+              until curl -m 3 ruoyi-admin:8080 
+              do
+                echo waiting for ruoyi-admin;
+                sleep 5;
+              done
+      containers:
+        - name: ruoyi-ui
+          image: 192.168.10.130:5000/ruoyi-ui:v3.8
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - mountPath: /etc/nginx/conf.d
+              name: config
+      volumes:
+        - name: config
+          configMap:
+            name: ruoyi-ui-config
+            items:
+              - key: nginx.conf
+                path: default.conf
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ruoyi-ui
+spec:
+  type: NodePort
+  selector:
+    app: ruoyi-ui
+  ports:
+    - port: 80
+      targetPort: 80
+      nodePort: 30080
+

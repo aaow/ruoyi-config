@@ -1,0 +1,26 @@
+auth:
+  rootPassword: "123qwe"
+  database: ry-vue
+
+initdbScriptsConfigMap: ruoyi-init-sql
+
+primary:
+  persistence:
+    size: 2Gi
+    enabled: true
+  service:
+    type: NodePort
+    nodePorts:
+      mysql: 30306
+secondary:
+  replicaCount: 2
+  persistence:
+    size: 2Gi
+    enabled: true
+  selector: ubuntu131
+  service:
+    type: NodePort
+    # nodePorts:
+    #   mysql: 30307
+
+architecture: replication
